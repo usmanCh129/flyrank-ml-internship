@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1">
+
+<title>
+ML Ranking of Content Refresh Opportunities
+</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f4f4f4;
+    color: #222;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+    line-height: 1.7;
+}
+
+.container {
+    max-width: 1050px;
+    margin: 40px auto;
+    background: white;
+    padding: 55px;
+}
+
+h1 {
+    font-size: 42px;
+    line-height: 1.15;
+    margin-bottom: 25px;
+}
+
+h2 {
+    margin-top: 50px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+h3 {
+    margin-top: 32px;
+}
+
+.subtitle {
+    font-size: 20px;
+    color: #555;
+}
+
+.note {
+    margin: 28px 0;
+    padding: 20px;
+    background: #f6f6f6;
+    border-left: 4px solid #666;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, 1fr);
+    gap: 16px;
+    margin: 30px 0;
+}
+
+.metric {
+    padding: 20px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.metric strong {
+    display: block;
+    font-size: 32px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 30px;
+}
+
+th, td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #f1f1f1;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 25px auto;
+}
+
+code {
+    padding: 2px 5px;
+    background: #eee;
+}
+
+footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+    color: #666;
+}
+
+@media (max-width: 700px) {
+
+    .container {
+        margin: 0;
+        padding: 25px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+ML Ranking of Content Refresh Opportunities
+</h1>
+
+<p class="subtitle">
+FlyRank ML Internship — Refresh / Content Opportunity Scoring
+</p>
+
+<div class="note">
+
+<strong>Research question:</strong>
+
+Can an ML model improve the ranking of content refresh
+opportunities compared with a simple visibility + CTR baseline?
+
+</div>
+
+<div class="metric-grid">
+
+<div class="metric">
+<strong>0.950</strong>
+Precision@20
+</div>
+
+<div class="metric">
+<strong>0.920</strong>
+Precision@50
+</div>
+
+<div class="metric">
+<strong>101,917</strong>
+June candidates
+</div>
+
+</div>
+
+<h2>Abstract</h2>
+
+<p>
+This study evaluates whether a machine-learning model can improve
+the ranking of content refresh opportunities compared with a simple
+visibility-and-CTR baseline. The FlyRank internship warehouse was
+aggregated to a client-content-month panel and used to predict whether
+a visibly active content item would receive zero organic clicks in the
+following month. A Random Forest trained on January-August 2025,
+validated on September-December 2025, and evaluated on January-May
+2026 achieved Precision@20 of <strong>0.950</strong> and
+Precision@50 of <strong>0.920</strong>. The current-click
+benchmark achieved 0.340 and 0.392, while the
+ML-07 baseline achieved 0.020 and 0.028.
+The result provides decision-support evidence for prioritizing manual
+content review; it does not establish that refreshing a page causes
+better search performance.
+</p>
+
+<h2>Introduction / Problem Statement</h2>
+
+<p>
+Content teams need practical ways to decide which existing pages
+should be reviewed first. This study tests whether observable search
+and engagement signals can produce a better prioritization ranking
+than a simple visibility-plus-CTR rule.
+</p>
+
+<h3>Research Question</h3>
+
+<p>
+<strong>
+Can an ML model improve the ranking of content refresh opportunities
+compared with a simple visibility + CTR baseline?
+</strong>
+</p>
+
+<h2>Data</h2>
+
+<p>
+The study uses the FlyRank internship warehouse covering
+<strong>January 2025 through June 2026</strong>.
+The daily data was aggregated to a client × content × month panel
+containing <strong>2,871,202 rows</strong> and
+<strong>427,292 distinct content items</strong>.
+</p>
+
+<p>
+The final labeled dataset contains <strong>608,050 observations</strong>
+from January 2025 through May 2026.
+The overall positive rate is approximately
+<strong>33.4%</strong>.
+</p>
+
+<p>
+The public paper contains no client names, domains, private queries,
+credentials, or raw exports.
+</p>
+
+<h2>Target Definition</h2>
+
+<p>
+For each item in month <em>t</em>, a positive case is defined as:
+at least 100 organic impressions in the current month, at least
+100 organic impressions in month <em>t+1</em>, and zero organic
+clicks in month <em>t+1</em>.
+</p>
+
+<p>
+Items falling below 100 impressions in the following month are
+excluded from the evaluation population. This separates visible
+zero-click outcomes from cases where search visibility itself
+declines.
+</p>
+
+<h2>Methodology</h2>
+
+<h3>Features</h3>
+
+<p>
+The Random Forest uses 26 features calculated from
+the current snapshot month. These include search-performance signals,
+engagement measures, traffic-source counts, AI referral counts,
+and derived ratios such as CTR and engaged-session rate.
+</p>
+
+<h3>Temporal Validation</h3>
+
+<table>
+
+<tr>
+<th>Period</th>
+<th>Role</th>
+</tr>
+
+<tr>
+<td>Jan–Aug 2025</td>
+<td>Training</td>
+</tr>
+
+<tr>
+<td>Sep–Dec 2025</td>
+<td>Validation</td>
+</tr>
+
+<tr>
+<td>Jan–May 2026</td>
+<td>Final test</td>
+</tr>
+
+<tr>
+<td>Jun 2026</td>
+<td>Recommendation snapshot</td>
+</tr>
+
+</table>
+
+<p>
+The future outcome is never used as an input feature.
+The final test period remains separate from model training.
+</p>
+
+<h3>Models Compared</h3>
+
+<p>
+The comparison contains three ranking methods:
+</p>
+
+<p>
+<strong>ML-07 baseline:</strong>
+<code>log(1 + impressions) × (1 − CTR)</code>
+</p>
+
+<p>
+<strong>Current-click benchmark:</strong>
+lower current-month click counts receive higher priority.
+</p>
+
+<p>
+<strong>Random Forest:</strong>
+300 trees, maximum depth 10, minimum leaf size 20,
+balanced subsampling, random seed 42.
+</p>
+
+<h3>Evaluation Metric</h3>
+
+<p>
+The primary metrics are Precision@20 and Precision@50, calculated
+separately for each test month and then averaged across
+January-May 2026.
+</p>
+
+<h2>Results</h2>
+
+<table>
+
+<tr>
+<th>Method</th>
+<th>Precision@20</th>
+<th>Precision@50</th>
+</tr>
+
+
+    <tr>
+        <td>ML-07 baseline</td>
+        <td>0.020</td>
+        <td>0.028</td>
+    </tr>
+    
+    <tr>
+        <td>Current-click benchmark</td>
+        <td>0.340</td>
+        <td>0.392</td>
+    </tr>
+    
+    <tr>
+        <td>Random Forest</td>
+        <td>0.950</td>
+        <td>0.920</td>
+    </tr>
+    
+
+</table>
+
+<p>
+On the same January-May 2026 test population, the Random Forest
+achieved <strong>2.79×</strong> the current-click
+benchmark's Precision@20 and <strong>2.35×</strong>
+its Precision@50.
+</p>
+
+<img
+src="assets/model_comparison.png"
+alt="Test ranking performance comparison">
+
+<h3>Month-by-Month Test Results</h3>
+
+<table>
+
+<tr>
+<th>Month</th>
+<th>Precision@20</th>
+<th>Precision@50</th>
+<th>Items</th>
+<th>Positive rate</th>
+</tr>
+
+
+    <tr>
+        <td>Jan 2026</td>
+        <td>0.85</td>
+        <td>0.82</td>
+        <td>60,088</td>
+        <td>33.2%</td>
+    </tr>
+    
+    <tr>
+        <td>Feb 2026</td>
+        <td>1.00</td>
+        <td>0.92</td>
+        <td>73,481</td>
+        <td>31.6%</td>
+    </tr>
+    
+    <tr>
+        <td>Mar 2026</td>
+        <td>0.95</td>
+        <td>0.96</td>
+        <td>88,482</td>
+        <td>39.6%</td>
+    </tr>
+    
+    <tr>
+        <td>Apr 2026</td>
+        <td>0.95</td>
+        <td>0.94</td>
+        <td>93,247</td>
+        <td>34.6%</td>
+    </tr>
+    
+    <tr>
+        <td>May 2026</td>
+        <td>1.00</td>
+        <td>0.96</td>
+        <td>89,285</td>
+        <td>28.9%</td>
+    </tr>
+    
+
+</table>
+
+<img
+src="assets/monthly_test_performance.png"
+alt="Random Forest performance by month">
+
+<h2>Feature Importance</h2>
+
+<table>
+
+<tr>
+<th>Feature</th>
+<th>Importance</th>
+</tr>
+
+
+    <tr>
+        <td>log_clicks</td>
+        <td>0.344</td>
+    </tr>
+    
+    <tr>
+        <td>avg_position</td>
+        <td>0.297</td>
+    </tr>
+    
+    <tr>
+        <td>ctr</td>
+        <td>0.262</td>
+    </tr>
+    
+    <tr>
+        <td>log_impressions</td>
+        <td>0.096</td>
+    </tr>
+    
+    <tr>
+        <td>log_pageviews</td>
+        <td>0.000</td>
+    </tr>
+    
+    <tr>
+        <td>log_sessions</td>
+        <td>0.000</td>
+    </tr>
+    
+    <tr>
+        <td>log_users</td>
+        <td>0.000</td>
+    </tr>
+    
+    <tr>
+        <td>log_engaged_sessions</td>
+        <td>0.000</td>
+    </tr>
+    
+    <tr>
+        <td>log_engagement_sec</td>
+        <td>0.000</td>
+    </tr>
+    
+    <tr>
+        <td>log_sessions_organic</td>
+        <td>0.000</td>
+    </tr>
+    
+
+</table>
+
+<img
+src="assets/feature_importance.png"
+alt="Random Forest feature importance">
+
+<p>
+The model relied most heavily on current click volume, search
+position, CTR, and impressions in this experiment. Feature importance
+is descriptive and model-specific; it does not establish causal
+effects.
+</p>
+
+<h2>Ranked Recommendations</h2>
+
+<p>
+The final recommendation model was fit using labeled observations
+through May 2026 and applied to the June 2026 snapshot.
+There are <strong>101,917</strong> eligible June
+candidates.
+</p>
+
+<p>
+The output is a <strong>manual review / refresh candidate queue</strong>.
+It is not an automatic instruction to refresh a page.
+</p>
+
+<p>
+The top-ranked candidates in the internal output are pseudonymous.
+The public paper reports only aggregate recommendation patterns.
+</p>
+
+<table>
+
+<tr>
+<th>Impression band</th>
+<th>Position band</th>
+<th>Top-100 count</th>
+<th>Mean score</th>
+<th>Mean impressions</th>
+<th>Mean CTR</th>
+</tr>
+
+
+    <tr>
+        <td>&lt;500</td>
+        <td>21+</td>
+        <td>100</td>
+        <td>0.924</td>
+        <td>151</td>
+        <td>0.000%</td>
+    </tr>
+    
+
+</table>
+
+<h3>Action Playbook</h3>
+
+<p>
+<strong>1. Review first.</strong>
+Inspect the highest-scoring candidates manually.
+</p>
+
+<p>
+<strong>2. Check search intent.</strong>
+Confirm that the page matches the intent represented by its
+observed search traffic.
+</p>
+
+<p>
+<strong>3. Review title and snippet.</strong>
+Assess whether the search presentation accurately represents
+the page.
+</p>
+
+<p>
+<strong>4. Review freshness.</strong>
+Check facts, examples, references, and product information.
+</p>
+
+<p>
+<strong>5. Review internal relevance.</strong>
+Consider structure, internal linking, and completeness.
+</p>
+
+<p>
+<strong>6. Keep the decision human.</strong>
+The score predicts the defined future search-performance condition.
+It does not prove that a refresh will improve rankings, clicks,
+or traffic.
+</p>
+
+<h2>Limitations & Honest Framing</h2>
+
+<p>
+The eligible population grows considerably over the observed period,
+so sample sizes differ across months. The target is an operational
+definition of a specific future zero-click condition rather than a
+direct measurement of content quality.
+</p>
+
+<p>
+The result is specific to this dataset, feature set, target
+definition, and time period. It should not be interpreted as evidence
+about Google's ranking algorithm or as proof that refreshing content
+causes improved search performance.
+</p>
+
+<p>
+Feature importance is descriptive rather than causal.
+The model was not evaluated against a labeled period after
+June 2026.
+</p>
+
+<h2>Reproducibility</h2>
+
+<p>
+The capstone notebook is:
+<code>work/notebooks/capstone_content_opportunity.ipynb</code>
+</p>
+
+<p>
+The repository should contain the notebook and exported analysis
+outputs. The paper uses only public-safe aggregate recommendation
+patterns.
+</p>
+
+<h2>Acknowledgments & Data Credit</h2>
+
+<p>
+Built on the <strong>FlyRank ML Internship dataset</strong>.
+</p>
+
+<p>
+<a href="https://flyrank.ai"
+   target="_blank"
+   rel="noopener">
+FlyRank
+</a>
+</p>
+
+<footer>
+FlyRank ML Internship — Refresh / Content Opportunity Scoring
+</footer>
+
+</div>
+
+</body>
+</html>
