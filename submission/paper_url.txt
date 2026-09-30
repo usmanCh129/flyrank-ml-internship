@@ -1,1 +1,1 @@
-PASTE-YOUR-DEPLOYED-PAPER-URL-HERE
+FlyRank_Capstone/github_package/submission/paper_url.txt
